@@ -89,7 +89,7 @@ class XRv9k_vm(vrnetlab.VM):
 
         # For XRv9k 25.x, we need to replace the default IDE disk with virtio-blk-pci
         # and add OVMF UEFI firmware
-        if self.version_major >= 25:
+        if self.version_major >= 24:
             # Remove the IDE disk that parent class added (both -drive flag and its value),
             # and extract the original qcow2 image path
             new_args = []
