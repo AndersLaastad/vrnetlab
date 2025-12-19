@@ -66,7 +66,9 @@ class XRv9k_vm(vrnetlab.VM):
         except: #noqa: E722
             version = re.search(r"\d+(?:\.\d+)+", self.image).group(0)
         
-        self.version_major = int(version.split(".")[0])
+        version_parts = version.split(".")
+        self.version_major = int(version_parts[0])
+        self.version_minor = int(version_parts[1]) if len(version_parts) > 1 else 0
 
         self.hostname = hostname
         self.conn_mode = conn_mode
@@ -87,9 +89,17 @@ class XRv9k_vm(vrnetlab.VM):
             ]
         )
 
-        # For XRv9k 25.x, we need to replace the default IDE disk with virtio-blk-pci
+        # For XRv9k 25.x, or 24.4+, we need to replace the default IDE disk with virtio-blk-pci
         # and add OVMF UEFI firmware
-        if self.version_major >= 24:
+        use_ovmf = False
+        if self.version_major > 25:
+            use_ovmf = True
+        elif self.version_major == 25:
+            use_ovmf = True
+        elif self.version_major == 24 and self.version_minor >= 4:
+            use_ovmf = True
+        # else: do not use OVMF/UEFI
+        if use_ovmf:
             # Remove the IDE disk that parent class added (both -drive flag and its value),
             # and extract the original qcow2 image path
             new_args = []
